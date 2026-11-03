@@ -61,10 +61,17 @@
             <div class="col-lg-9">
                 <div class="card main-card bg-white">
                     <div class="card-header-custom">
-                        <!-- Botón de Cerrar Sesión -->
-                        <a href="/logout" class="position-absolute top-0 end-0 m-3 btn btn-sm btn-outline-light fw-semibold">
-                            <i class="fa-solid fa-right-from-bracket me-1"></i> Cerrar Sesión
-                        </a>
+                        <!-- Botones de Cerrar Sesión y Eliminar Cuenta -->
+                        <div class="position-absolute top-0 end-0 m-3 d-flex gap-2">
+                            <a href="/logout" class="btn btn-sm btn-outline-light fw-semibold">
+                                <i class="fa-solid fa-right-from-bracket me-1"></i> Cerrar Sesión
+                            </a>
+                            <form action="/eliminar_cuenta" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar tu cuenta permanentemente? Esto liberará tu correo.');">
+                                <button type="submit" class="btn btn-sm btn-danger fw-semibold">
+                                    <i class="fa-solid fa-trash-can me-1"></i> Eliminar Cuenta
+                                </button>
+                            </form>
+                        </div>
 
                         <h2 class="fw-bold mb-1"><i class="fa-solid fa-id-card-clip me-2"></i>MiDocVehicular</h2>
                         <p class="mb-0 text-white-50">Plataforma Digital de Registro y Validación de Documentos para Choferes</p>

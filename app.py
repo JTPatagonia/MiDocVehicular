@@ -13,7 +13,6 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "clave_secreta_super_segura")
 
-# Configuración de Base de Datos
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://usuario:password@localhost:5432/validador_db")
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
@@ -30,19 +29,17 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-# Configuración de Correo Gmail
 MAIL_SERVER = "smtp.gmail.com"
 MAIL_PORT = 587
 MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "midocvehicular@gmail.com")
 MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "tu_contraseña_de_aplicacion_google")
 
-# Modelos de Base de Datos
 class Usuario(UserMixin, db.Model):
     __tablename__ = "usuarios"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    choferes = db.relationship("Chofer", backref="propietario", lazy=True)
+    choferes = db.relationship("Chofer", backref="propietario", cascade="all, delete-orphan", lazy=True)
 
 class Chofer(db.Model):
     __tablename__ = "choferes"
@@ -74,36 +71,6 @@ with app.app_context():
     except Exception as e:
         print(f"Error al crear tablas: {e}")
 
-# Función para enviar correo de bienvenida al registrarse
-def enviar_correo_bienvenida(destinatario):
-    try:
-        msg = MIMEMultipart()
-        msg['Subject'] = '🎉 ¡Bienvenido a MiDocVehicular - Cuenta creada con éxito!'
-        msg['From'] = MAIL_USERNAME
-        msg['To'] = destinatario
-
-        cuerpo = """
-        ¡Hola!
-        
-        Tu cuenta en MiDocVehicular ha sido creada con éxito.
-        Ya puedes iniciar sesión para registrar tus vehículos y gestionar tus códigos QR de fiscalización oficiales para Carabineros de Chile.
-        
-        Atentamente,
-        El equipo de MiDocVehicular
-        """
-        msg.attach(MIMEText(cuerpo, 'plain'))
-
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-        server.starttls()
-        server.login(MAIL_USERNAME, MAIL_PASSWORD)
-        server.sendmail(MAIL_USERNAME, destinatario, msg.as_string())
-        server.quit()
-        return True
-    except Exception as e:
-        print(f"Error al enviar correo de bienvenida: {e}")
-        return False
-
-# Función para enviar el correo con el QR de vehículos
 def enviar_correo_qr(destinatario, nombre_chofer, qr_path):
     try:
         msg = MIMEMultipart()
@@ -136,10 +103,15 @@ def enviar_correo_qr(destinatario, nombre_chofer, qr_path):
         server.quit()
         return True
     except Exception as e:
-        print(f"Error al enviar correo: {e}")
+        print(f"Error al enviar correo QR: {e}")
         return False
 
-# Rutas de Autenticación
+@app.route("/")
+def raiz():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+    return redirect(url_for("login"))
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -168,12 +140,6 @@ def register():
         db.session.add(nuevo_usuario)
         db.session.commit()
         
-        # Intentar enviar correo de bienvenida de forma segura sin bloquear la web
-        try:
-            enviar_correo_bienvenida(email)
-        except Exception as e:
-            print(f"Aviso: No se pudo enviar el correo pero la cuenta se creó: {e}")
-        
         flash("¡Cuenta creada con éxito! Ya puedes iniciar sesión.", "success")
         return redirect(url_for("login"))
     return render_template("register.html")
@@ -184,10 +150,15 @@ def logout():
     logout_user()
     return redirect(url_for("login"))
 
-@app.route("/")
-def raiz():
-    if current_user.is_authenticated:
-        return redirect(url_for("index"))
+# Ruta para eliminar la cuenta actual y liberar el correo
+@app.route("/eliminar_cuenta", methods=["POST"])
+@login_required
+def eliminar_cuenta():
+    user = current_user
+    db.session.delete(user)
+    db.session.commit()
+    logout_user()
+    flash("Tu cuenta ha sido eliminada correctamente.", "info")
     return redirect(url_for("login"))
 
 @app.route("/portal")
