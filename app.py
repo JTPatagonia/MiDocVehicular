@@ -1,6 +1,6 @@
 import os
 import qrcode
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 
@@ -15,6 +15,7 @@ if DATABASE_URL.startswith("postgres://"):
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+# Carpeta de subidas segura
 UPLOAD_FOLDER = "static/uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -31,13 +32,11 @@ class Chofer(db.Model):
     patente = db.Column(db.String(10), nullable=False)
     tipo_licencia = db.Column(db.String(10), nullable=False)
     
-    # Fechas de vencimiento
     venc_licencia = db.Column(db.String(20), nullable=False)
     venc_permiso = db.Column(db.String(20), nullable=False)
     venc_revision = db.Column(db.String(20), nullable=False)
     venc_soap = db.Column(db.String(20), nullable=False)
     
-    # Rutas de archivos PDF o imágenes
     doc_licencia = db.Column(db.String(255))
     doc_permiso = db.Column(db.String(255))
     doc_revision = db.Column(db.String(255))
@@ -45,9 +44,12 @@ class Chofer(db.Model):
     
     qr_code = db.Column(db.String(255))
 
-# Asegurar la creación de tablas en la base de datos al iniciar la aplicación
+# Crear tablas automáticamente al arrancar
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+    except Exception as e:
+        print(f"Error al crear las tablas: {e}")
 
 @app.route("/")
 def index():
@@ -58,7 +60,7 @@ def registrar():
     try:
         nombre = request.form.get("nombre")
         rut = request.form.get("rut")
-        patente = request.form.get("patente").upper()
+        patente = request.form.get("patente", "").upper()
         tipo_licencia = request.form.get("tipo_licencia")
         
         venc_licencia = request.form.get("venc_licencia")
@@ -66,7 +68,6 @@ def registrar():
         venc_revision = request.form.get("venc_revision")
         venc_soap = request.form.get("venc_soap")
         
-        # Guardar archivos adjuntos de forma segura
         def guardar_archivo(input_name):
             file = request.files.get(input_name)
             if file and file.filename != "":
@@ -81,7 +82,6 @@ def registrar():
         path_revision = guardar_archivo("doc_revision")
         path_soap = guardar_archivo("doc_soap")
 
-        # Verificar si el chofer ya existe para actualizarlo o crearlo
         chofer = Chofer.query.filter_by(rut=rut).first()
         if not chofer:
             chofer = Chofer(rut=rut)
@@ -102,7 +102,6 @@ def registrar():
         
         db.session.commit()
 
-        # Generar código QR apuntando a la vista de fiscalización
         qr_url = url_for("fiscalizar", rut=rut, _external=True)
         img = qrcode.make(qr_url)
         qr_filename = f"qr_{rut.replace('.', '').replace('-', '')}.png"
@@ -117,7 +116,7 @@ def registrar():
         
     except Exception as e:
         db.session.rollback()
-        flash(f"Error al registrar: {str(e)}", "danger")
+        flash(f"Error al registrar en la base de datos: {str(e)}", "danger")
         return redirect(url_for("index"))
 
 @app.route("/fiscalizar/<rut>")
