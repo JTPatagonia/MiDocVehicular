@@ -168,10 +168,13 @@ def register():
         db.session.add(nuevo_usuario)
         db.session.commit()
         
-        # Enviar correo electrónico de bienvenida
-        enviar_correo_bienvenida(email)
+        # Intentar enviar correo de bienvenida de forma segura sin bloquear la web
+        try:
+            enviar_correo_bienvenida(email)
+        except Exception as e:
+            print(f"Aviso: No se pudo enviar el correo pero la cuenta se creó: {e}")
         
-        flash("¡Cuenta creada con éxito! Revisa tu correo de bienvenida e inicia sesión.", "success")
+        flash("¡Cuenta creada con éxito! Ya puedes iniciar sesión.", "success")
         return redirect(url_for("login"))
     return render_template("register.html")
 
