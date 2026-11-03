@@ -67,6 +67,8 @@ def load_user(user_id):
 
 with app.app_context():
     try:
+        # Esto limpiará y recreará la base de datos con la estructura exacta actual
+        db.drop_all()
         db.create_all()
     except Exception as e:
         print(f"Error al crear tablas: {e}")
