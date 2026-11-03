@@ -3,107 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiDocVehicular - Registro de Choferes</title>
+    <title>MiDocVehicular - Portal del Chofer</title>
+    <!-- Bootstrap 5 & Google Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: #334155;
+        }
+        .main-card {
+            border: none;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+        .card-header-custom {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 0.65rem 1rem;
+            border: 1px solid #cbd5e1;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+        }
+        .btn-custom {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.8rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            color: white;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1.2rem;
+        }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container py-5">
+<body class="py-5">
+    <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white text-center">
-                        <h3>Registro de Documentos - Chofer de Chile</h3>
+            <div class="col-lg-9">
+                <div class="card main-card bg-white">
+                    <div class="card-header-custom">
+                        <h2 class="fw-bold mb-1"><i class="fa-solid fa-id-card-clip me-2"></i>MiDocVehicular</h2>
+                        <p class="mb-0 text-white-50">Plataforma Digital de Registro y Validación de Documentos para Choferes</p>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4 p-md-5">
+                        
                         {% with messages = get_flashed_messages(with_categories=true) %}
                             {% if messages %}
                                 {% for category, message in messages %}
-                                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                                        <i class="fa-solid {{ 'fa-circle-check' if category == 'success' else 'fa-triangle-exclamation' }} me-2"></i>
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
                                 {% endfor %}
                             {% endif %}
                         {% endwith %}
 
                         <form action="/registrar" method="POST" enctype="multipart/form-data">
+                            
                             <div class="mb-3">
-                                <label class="form-label">Nombre Completo</label>
-                                <input type="text" class="form-control" name="nombre" required>
+                                <label class="form-label fw-semibold">Nombre Completo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="fa-solid fa-user text-muted"></i></span>
+                                    <input type="text" class="form-control" name="nombre" placeholder="Ej. Juan Pérez Soto" required>
+                                </div>
                             </div>
+
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">RUT</label>
-                                    <input type="text" class="form-control" name="rut" placeholder="12.345.678-9" required>
+                                    <label class="form-label fw-semibold">RUT</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="fa-solid fa-address-card text-muted"></i></span>
+                                        <input type="text" class="form-control" name="rut" placeholder="12.345.678-9" required>
+                                    </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Patente del Vehículo (PPU)</label>
-                                    <input type="text" class="form-control" name="patente" placeholder="ABCD-12" required>
+                                    <label class="form-label fw-semibold">Patente del Vehículo (PPU)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="fa-solid fa-car text-muted"></i></span>
+                                        <input type="text" class="form-control" name="patente" placeholder="ABCD-12" required>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Tipo de Licencia</label>
-                                <select class="form-select" name="tipo_licencia" required>
-                                    <option value="Clase A1">Clase A1</option>
-                                    <option value="Clase A2">Clase A2</option>
-                                    <option value="Clase A3">Clase A3</option>
-                                    <option value="Clase A4">Clase A4</option>
-                                    <option value="Clase A5">Clase A5</option>
-                                    <option value="Clase B" selected>Clase B</option>
-                                    <option value="Clase C">Clase C</option>
-                                </select>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Tipo de Licencia</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="fa-solid fa-clipboard-user text-muted"></i></span>
+                                    <select class="form-select" name="tipo_licencia" required>
+                                        <option value="Clase A1">Clase A1 - Taxis</option>
+                                        <option value="Clase A2">Clase A2 - Taxis, ambulancias, minibuses</option>
+                                        <option value="Clase A3">Clase A3 - Taxis, ambulancias, transporte escolar, interurbano</option>
+                                        <option value="Clase A4">Clase A4 - Transporte de carga simple</option>
+                                        <option value="Clase A5">Clase A5 - Transporte de carga articulada</option>
+                                        <option value="Clase B" selected>Clase B - Vehículos motorizados particulares</option>
+                                        <option value="Clase C">Clase C - Vehículos de 2 o 3 ruedas (Motos)</option>
+                                    </select>
+                                </div>
                             </div>
 
-                            <hr>
-                            <h5 class="text-secondary">Documentos y Vencimientos</h5>
+                            <div class="section-title">
+                                <i class="fa-solid fa-file-shield text-primary me-2"></i>Documentos y Fechas de Vencimiento
+                            </div>
 
-                            <div class="row mb-3">
+                            <!-- Bloque Licencia -->
+                            <div class="row g-3 align-items-center mb-3 p-3 bg-light rounded-3 border">
                                 <div class="col-md-6">
-                                    <label class="form-label">Vencimiento Licencia</label>
+                                    <label class="form-label small fw-bold text-secondary mb-1">Vencimiento Licencia</label>
                                     <input type="date" class="form-control" name="venc_licencia" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Archivo Licencia (PDF/Imagen)</label>
-                                    <input type="file" class="form-control" name="doc_licencia">
+                                    <label class="form-label small fw-bold text-secondary mb-1">Archivo Licencia (PDF/Img)</label>
+                                    <input type="file" class="form-control form-control-sm" name="doc_licencia">
                                 </div>
                             </div>
 
-                            <div class="row mb-3">
+                            <!-- Bloque Permiso -->
+                            <div class="row g-3 align-items-center mb-3 p-3 bg-light rounded-3 border">
                                 <div class="col-md-6">
-                                    <label class="form-label">Vencimiento Permiso de Circulación</label>
+                                    <label class="form-label small fw-bold text-secondary mb-1">Vencimiento Permiso de Circulación</label>
                                     <input type="date" class="form-control" name="venc_permiso" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Archivo Permiso Circulación</label>
-                                    <input type="file" class="form-control" name="doc_permiso">
+                                    <label class="form-label small fw-bold text-secondary mb-1">Archivo Permiso</label>
+                                    <input type="file" class="form-control form-control-sm" name="doc_permiso">
                                 </div>
                             </div>
 
-                            <div class="row mb-3">
+                            <!-- Bloque Revision -->
+                            <div class="row g-3 align-items-center mb-3 p-3 bg-light rounded-3 border">
                                 <div class="col-md-6">
-                                    <label class="form-label">Vencimiento Revisión Técnica</label>
+                                    <label class="form-label small fw-bold text-secondary mb-1">Vencimiento Revisión Técnica</label>
                                     <input type="date" class="form-control" name="venc_revision" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Archivo Revisión Técnica</label>
-                                    <input type="file" class="form-control" name="doc_revision">
+                                    <label class="form-label small fw-bold text-secondary mb-1">Archivo Revisión Técnica</label>
+                                    <input type="file" class="form-control form-control-sm" name="doc_revision">
                                 </div>
                             </div>
 
-                            <div class="row mb-3">
+                            <!-- Bloque SOAP -->
+                            <div class="row g-3 align-items-center mb-4 p-3 bg-light rounded-3 border">
                                 <div class="col-md-6">
-                                    <label class="form-label">Vencimiento SOAP</label>
+                                    <label class="form-label small fw-bold text-secondary mb-1">Vencimiento SOAP</label>
                                     <input type="date" class="form-control" name="venc_soap" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Archivo SOAP</label>
-                                    <input type="file" class="form-control" name="doc_soap">
+                                    <label class="form-label small fw-bold text-secondary mb-1">Archivo SOAP</label>
+                                    <input type="file" class="form-control form-control-sm" name="doc_soap">
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn btn-success w-100 py-2">Generar Código QR de Fiscalización</button>
+                            <button type="submit" class="btn btn-custom w-100 py-3 shadow-sm fs-5">
+                                <i class="fa-solid fa-qrcode me-2"></i> Generar Código QR de Fiscalización
+                            </button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
