@@ -21,7 +21,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 db = SQLAlchemy(app)
 
-# Modelo de Base de Datos
+# Modelo de Base de Datos para Choferes de Chile
 class Chofer(db.Model):
     __tablename__ = "choferes"
     
@@ -45,6 +45,7 @@ class Chofer(db.Model):
     
     qr_code = db.Column(db.String(255))
 
+# Asegurar la creación de tablas en la base de datos al iniciar la aplicación
 with app.app_context():
     db.create_all()
 
