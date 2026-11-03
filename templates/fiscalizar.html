@@ -78,7 +78,7 @@
                             </div>
                             <div>
                                 {% if chofer.doc_licencia %}
-                                    <a href="/{{ chofer.doc_licencia }}" target="_blank" class="btn btn-sm btn-outline-info fw-semibold">
+                                    <a href="{{ chofer.doc_licencia }}" target="_blank" class="btn btn-sm btn-outline-info fw-semibold">
                                         <i class="fa-solid fa-eye me-1"></i> Ver Documento
                                     </a>
                                 {% else %}
@@ -95,7 +95,7 @@
                             </div>
                             <div>
                                 {% if chofer.doc_permiso %}
-                                    <a href="/{{ chofer.doc_permiso }}" target="_blank" class="btn btn-sm btn-outline-info fw-semibold">
+                                    <a href="{{ chofer.doc_permiso }}" target="_blank" class="btn btn-sm btn-outline-info fw-semibold">
                                         <i class="fa-solid fa-eye me-1"></i> Ver Documento
                                     </a>
                                 {% else %}
@@ -112,7 +112,7 @@
                             </div>
                             <div>
                                 {% if chofer.doc_revision %}
-                                    <a href="/{{ chofer.doc_revision }}" target="_blank" class="btn btn-sm btn-outline-info fw-semibold">
+                                    <a href="{{ chofer.doc_revision }}" target="_blank" class="btn btn-sm btn-outline-info fw-semibold">
                                         <i class="fa-solid fa-eye me-1"></i> Ver Documento
                                     </a>
                                 {% else %}
@@ -129,7 +129,7 @@
                             </div>
                             <div>
                                 {% if chofer.doc_soap %}
-                                    <a href="/{{ chofer.doc_soap }}" target="_blank" class="btn btn-sm btn-outline-info fw-semibold">
+                                    <a href="{{ chofer.doc_soap }}" target="_blank" class="btn btn-sm btn-outline-info fw-semibold">
                                         <i class="fa-solid fa-eye me-1"></i> Ver Documento
                                     </a>
                                 {% else %}
