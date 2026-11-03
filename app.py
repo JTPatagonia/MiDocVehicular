@@ -1,6 +1,7 @@
 import os
 import qrcode
 import smtplib
+import threading
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
@@ -67,46 +68,36 @@ def load_user(user_id):
 
 with app.app_context():
     try:
-        # Esto limpiará y recreará la base de datos con la estructura exacta actual
-        db.drop_all()
         db.create_all()
     except Exception as e:
         print(f"Error al crear tablas: {e}")
 
-def enviar_correo_qr(destinatario, nombre_chofer, qr_path):
-    try:
-        msg = MIMEMultipart()
-        msg['Subject'] = '🚗 Tu Código QR de Fiscalización - MiDocVehicular'
-        msg['From'] = MAIL_USERNAME
-        msg['To'] = destinatario
+# Funciones de envío en segundo plano para evitar errores 502
+def enviar_correo_async(destinatario, asunto, cuerpo, qr_path=None):
+    def tarea():
+        try:
+            msg = MIMEMultipart()
+            msg['Subject'] = asunto
+            msg['From'] = MAIL_USERNAME
+            msg['To'] = destinatario
+            msg.attach(MIMEText(cuerpo, 'plain'))
 
-        cuerpo = f"""
-        Hola {nombre_chofer},
-        
-        Tus documentos vehiculares han sido registrados con éxito en MiDocVehicular.
-        Adjunto encontrarás tu código QR oficial para el control de Carabineros de Chile.
-        
-        Atentamente,
-        Equipo MiDocVehicular
-        """
-        msg.attach(MIMEText(cuerpo, 'plain'))
+            if qr_path and os.path.exists(qr_path):
+                with open(qr_path, 'rb') as f:
+                    img_data = f.read()
+                img = MIMEImage(img_data, name="codigo_qr.png")
+                img.add_header('Content-ID', '<qr_code>')
+                msg.attach(img)
 
-        with open(qr_path, 'rb') as f:
-            img_data = f.read()
-        
-        img = MIMEImage(img_data, name="codigo_qr.png")
-        img.add_header('Content-ID', '<qr_code>')
-        msg.attach(img)
+            server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
+            server.starttls()
+            server.login(MAIL_USERNAME, MAIL_PASSWORD)
+            server.sendmail(MAIL_USERNAME, destinatario, msg.as_string())
+            server.quit()
+        except Exception as e:
+            print(f"Error enviando correo en segundo plano: {e}")
 
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-        server.starttls()
-        server.login(MAIL_USERNAME, MAIL_PASSWORD)
-        server.sendmail(MAIL_USERNAME, destinatario, msg.as_string())
-        server.quit()
-        return True
-    except Exception as e:
-        print(f"Error al enviar correo QR: {e}")
-        return False
+    threading.Thread(target=tarea).start()
 
 @app.route("/")
 def raiz():
@@ -142,7 +133,19 @@ def register():
         db.session.add(nuevo_usuario)
         db.session.commit()
         
-        flash("¡Cuenta creada con éxito! Ya puedes iniciar sesión.", "success")
+        # Enviar correo de bienvenida en segundo plano sin bloquear la web
+        asunto = "🎉 ¡Bienvenido a MiDocVehicular - Cuenta creada con éxito!"
+        cuerpo = """¡Hola!
+
+Tu cuenta en MiDocVehicular ha sido creada con éxito.
+Ya puedes iniciar sesión para registrar tus vehículos y gestionar tus códigos QR de fiscalización oficiales para Carabineros de Chile.
+
+Atentamente,
+El equipo de MiDocVehicular"""
+        
+        enviar_correo_async(email, asunto, cuerpo)
+        
+        flash("¡Cuenta creada con éxito! Revisa tu bandeja de entrada para el correo de bienvenida e inicia sesión.", "success")
         return redirect(url_for("login"))
     return render_template("register.html")
 
@@ -152,15 +155,12 @@ def logout():
     logout_user()
     return redirect(url_for("login"))
 
-# Ruta para eliminar la cuenta actual de forma segura
 @app.route("/eliminar_cuenta", methods=["POST"])
 @login_required
 def eliminar_cuenta():
     try:
         usuario = current_user
-        # Eliminar primero los choferes asociados para evitar errores de llave foránea
         Chofer.query.filter_by(usuario_id=usuario.id).delete()
-        # Eliminar el usuario
         db.session.delete(usuario)
         db.session.commit()
         logout_user()
@@ -236,7 +236,17 @@ def registrar():
         chofer.qr_code = qr_path.replace("\\", "/")
         db.session.commit()
 
-        enviar_correo_qr(current_user.email, nombre, qr_path)
+        # Enviar correo del QR en segundo plano
+        asunto_qr = "🚗 Tu Código QR de Fiscalización - MiDocVehicular"
+        cuerpo_qr = f"""Hola {nombre},
+
+Tus documentos vehiculares han sido registrados con éxito en MiDocVehicular.
+Adjunto encontrarás tu código QR oficial para el control de Carabineros de Chile.
+
+Atentamente,
+Equipo MiDocVehicular"""
+        
+        enviar_correo_async(current_user.email, asunto_qr, cuerpo_qr, qr_path)
 
         qr_web_path = url_for("static", filename=f"uploads/{qr_filename}")
         return render_template("index.html", qr_url=qr_web_path)
