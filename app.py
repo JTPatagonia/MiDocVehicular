@@ -1,10 +1,7 @@
 import os
 import qrcode
-import smtplib
+import requests
 import threading
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.image import MIMEImage
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -30,10 +27,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-MAIL_SERVER = "smtp.gmail.com"
-MAIL_PORT = 587
-MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "midocvehicular@gmail.com")
-MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "tu_contraseña_de_aplicacion_google")
+# Clave de API de Resend (la configuraremos en las variables de entorno de Render)
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 
 class Usuario(UserMixin, db.Model):
     __tablename__ = "usuarios"
@@ -72,30 +67,24 @@ with app.app_context():
     except Exception as e:
         print(f"Error al crear tablas: {e}")
 
-# Funciones de envío en segundo plano para evitar errores 502
-def enviar_correo_async(destinatario, asunto, cuerpo, qr_path=None):
+# Función para enviar correos de forma moderna y segura con Resend (evita bloqueos en Render)
+def enviar_correo_resend(destinatario, asunto, texto_cuerpo):
     def tarea():
         try:
-            msg = MIMEMultipart()
-            msg['Subject'] = asunto
-            msg['From'] = MAIL_USERNAME
-            msg['To'] = destinatario
-            msg.attach(MIMEText(cuerpo, 'plain'))
-
-            if qr_path and os.path.exists(qr_path):
-                with open(qr_path, 'rb') as f:
-                    img_data = f.read()
-                img = MIMEImage(img_data, name="codigo_qr.png")
-                img.add_header('Content-ID', '<qr_code>')
-                msg.attach(img)
-
-            server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-            server.starttls()
-            server.login(MAIL_USERNAME, MAIL_PASSWORD)
-            server.sendmail(MAIL_USERNAME, destinatario, msg.as_string())
-            server.quit()
+            headers = {
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            data = {
+                "from": "MiDocVehicular <onboarding@resend.dev>", # O tu dominio verificado si lo tienes
+                "to": [destinatario],
+                "subject": asunto,
+                "text": texto_cuerpo
+            }
+            response = requests.post("https://api.resend.com/emails", json=data, headers=headers)
+            print(f"Respuesta Resend: {response.status_code}, {response.text}")
         except Exception as e:
-            print(f"Error enviando correo en segundo plano: {e}")
+            print(f"Error enviando correo vía Resend: {e}")
 
     threading.Thread(target=tarea).start()
 
@@ -133,7 +122,7 @@ def register():
         db.session.add(nuevo_usuario)
         db.session.commit()
         
-        # Enviar correo de bienvenida en segundo plano sin bloquear la web
+        # Enviar correo de bienvenida
         asunto = "🎉 ¡Bienvenido a MiDocVehicular - Cuenta creada con éxito!"
         cuerpo = """¡Hola!
 
@@ -143,7 +132,7 @@ Ya puedes iniciar sesión para registrar tus vehículos y gestionar tus códigos
 Atentamente,
 El equipo de MiDocVehicular"""
         
-        enviar_correo_async(email, asunto, cuerpo)
+        enviar_correo_resend(email, asunto, cuerpo)
         
         flash("¡Cuenta creada con éxito! Revisa tu bandeja de entrada para el correo de bienvenida e inicia sesión.", "success")
         return redirect(url_for("login"))
@@ -236,17 +225,19 @@ def registrar():
         chofer.qr_code = qr_path.replace("\\", "/")
         db.session.commit()
 
-        # Enviar correo del QR en segundo plano
+        # Enviar aviso con el enlace directo al QR mediante Resend
+        fiscalizar_link = url_for("fiscalizar", rut=rut, _external=True)
         asunto_qr = "🚗 Tu Código QR de Fiscalización - MiDocVehicular"
         cuerpo_qr = f"""Hola {nombre},
 
 Tus documentos vehiculares han sido registrados con éxito en MiDocVehicular.
-Adjunto encontrarás tu código QR oficial para el control de Carabineros de Chile.
+Puedes acceder directamente a tu tarjeta de fiscalización y código QR para Carabineros en el siguiente enlace:
+{fiscalizar_link}
 
 Atentamente,
 Equipo MiDocVehicular"""
         
-        enviar_correo_async(current_user.email, asunto_qr, cuerpo_qr, qr_path)
+        enviar_correo_resend(current_user.email, asunto_qr, cuerpo_qr)
 
         qr_web_path = url_for("static", filename=f"uploads/{qr_filename}")
         return render_template("index.html", qr_url=qr_web_path)
