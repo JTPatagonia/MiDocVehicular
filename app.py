@@ -9,14 +9,14 @@ app.secret_key = os.environ.get("SECRET_KEY", "clave_secreta_super_segura")
 
 # Configuración de Base de Datos (PostgreSQL en Render o local)
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://usuario:password@localhost:5432/validador_db")
-if DATABASE_URL.startswith("postgres://"):
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Carpeta de subidas segura
-UPLOAD_FOLDER = "static/uploads"
+# Creación automática de la carpeta de subidas de archivos y códigos QR
+UPLOAD_FOLDER = os.path.join("static", "uploads")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -32,11 +32,13 @@ class Chofer(db.Model):
     patente = db.Column(db.String(10), nullable=False)
     tipo_licencia = db.Column(db.String(10), nullable=False)
     
+    # Fechas de vencimiento
     venc_licencia = db.Column(db.String(20), nullable=False)
     venc_permiso = db.Column(db.String(20), nullable=False)
     venc_revision = db.Column(db.String(20), nullable=False)
     venc_soap = db.Column(db.String(20), nullable=False)
     
+    # Rutas de archivos PDF o imágenes
     doc_licencia = db.Column(db.String(255))
     doc_permiso = db.Column(db.String(255))
     doc_revision = db.Column(db.String(255))
@@ -44,7 +46,7 @@ class Chofer(db.Model):
     
     qr_code = db.Column(db.String(255))
 
-# Crear tablas automáticamente al arrancar
+# Crear tablas automáticamente al arrancar la aplicación
 with app.app_context():
     try:
         db.create_all()
@@ -68,6 +70,7 @@ def registrar():
         venc_revision = request.form.get("venc_revision")
         venc_soap = request.form.get("venc_soap")
         
+        # Función auxiliar para guardar archivos adjuntos de forma segura
         def guardar_archivo(input_name):
             file = request.files.get(input_name)
             if file and file.filename != "":
@@ -82,6 +85,7 @@ def registrar():
         path_revision = guardar_archivo("doc_revision")
         path_soap = guardar_archivo("doc_soap")
 
+        # Verificar si el chofer ya existe para actualizarlo o crearlo
         chofer = Chofer.query.filter_by(rut=rut).first()
         if not chofer:
             chofer = Chofer(rut=rut)
@@ -102,21 +106,25 @@ def registrar():
         
         db.session.commit()
 
-        qr_url = url_for("fiscalizar", rut=rut, _external=True)
-        img = qrcode.make(qr_url)
+        # Generar código QR apuntando a la vista de fiscalización
         qr_filename = f"qr_{rut.replace('.', '').replace('-', '')}.png"
         qr_path = os.path.join(app.config["UPLOAD_FOLDER"], qr_filename)
+        
+        qr_url_target = url_for("fiscalizar", rut=rut, _external=True)
+        img = qrcode.make(qr_url_target)
         img.save(qr_path)
         
         chofer.qr_code = qr_path
         db.session.commit()
 
-        flash("¡Documentos registrados y código QR generado con éxito!", "success")
-        return redirect(url_for("index"))
+        # Ruta web pública para renderizar el QR directamente en la pantalla
+        qr_web_path = url_for("static", filename=f"uploads/{qr_filename}")
+
+        return render_template("index.html", qr_url=qr_web_path)
         
     except Exception as e:
         db.session.rollback()
-        flash(f"Error al registrar en la base de datos: {str(e)}", "danger")
+        flash(f"Error al registrar: {str(e)}", "danger")
         return redirect(url_for("index"))
 
 @app.route("/fiscalizar/<rut>")

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MiDocVehicular - Portal del Chofer</title>
-    <!-- Bootstrap 5 & Google Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,7 +18,7 @@
             border: none;
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
         }
         .card-header-custom {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
@@ -32,10 +31,6 @@
             padding: 0.65rem 1rem;
             border: 1px solid #cbd5e1;
         }
-        .form-control:focus, .form-select:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
-        }
         .btn-custom {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             border: none;
@@ -43,12 +38,9 @@
             padding: 0.8rem;
             font-weight: 600;
             color: white;
-            transition: all 0.3s ease;
         }
         .btn-custom:hover {
             background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
             color: white;
         }
         .section-title {
@@ -73,17 +65,22 @@
                     </div>
                     <div class="card-body p-4 p-md-5">
                         
-                        {% with messages = get_flashed_messages(with_categories=true) %}
-                            {% if messages %}
-                                {% for category, message in messages %}
-                                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
-                                        <i class="fa-solid {{ 'fa-circle-check' if category == 'success' else 'fa-triangle-exclamation' }} me-2"></i>
-                                        {{ message }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                    </div>
-                                {% endfor %}
-                            {% endif %}
-                        {% endwith %}
+                        <!-- Si se generó un QR, se muestra en pantalla -->
+                        {% if qr_url %}
+                        <div class="text-center p-4 bg-light rounded-4 border mb-4">
+                            <h3 class="text-success fw-bold mb-3"><i class="fa-solid fa-circle-check me-2"></i>¡Registro Exitoso!</h3>
+                            <p class="text-muted">Tu código QR de fiscalización ha sido generado correctamente:</p>
+                            <div class="bg-white p-3 d-inline-block rounded shadow-sm border mb-3">
+                                <img src="{{ qr_url }}" alt="Código QR de Fiscalización" class="img-fluid" style="max-width: 220px;">
+                            </div>
+                            <div>
+                                <a href="{{ qr_url }}" download="codigo_qr_chofer.png" class="btn btn-primary px-4 py-2 fw-semibold">
+                                    <i class="fa-solid fa-download me-2"></i>Descargar Código QR
+                                </a>
+                                <a href="/" class="btn btn-outline-secondary px-4 py-2 ms-2 fw-semibold">Registrar Otro</a>
+                            </div>
+                        </div>
+                        {% endif %}
 
                         <form action="/registrar" method="POST" enctype="multipart/form-data">
                             
@@ -119,11 +116,11 @@
                                     <select class="form-select" name="tipo_licencia" required>
                                         <option value="Clase A1">Clase A1 - Taxis</option>
                                         <option value="Clase A2">Clase A2 - Taxis, ambulancias, minibuses</option>
-                                        <option value="Clase A3">Clase A3 - Taxis, ambulancias, transporte escolar, interurbano</option>
+                                        <option value="Clase A3">Clase A3 - Taxis, transporte escolar, interurbano</option>
                                         <option value="Clase A4">Clase A4 - Transporte de carga simple</option>
                                         <option value="Clase A5">Clase A5 - Transporte de carga articulada</option>
                                         <option value="Clase B" selected>Clase B - Vehículos motorizados particulares</option>
-                                        <option value="Clase C">Clase C - Vehículos de 2 o 3 ruedas (Motos)</option>
+                                        <option value="Clase C">Clase C - Motos</option>
                                     </select>
                                 </div>
                             </div>
@@ -132,7 +129,6 @@
                                 <i class="fa-solid fa-file-shield text-primary me-2"></i>Documentos y Fechas de Vencimiento
                             </div>
 
-                            <!-- Bloque Licencia -->
                             <div class="row g-3 align-items-center mb-3 p-3 bg-light rounded-3 border">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary mb-1">Vencimiento Licencia</label>
@@ -144,7 +140,6 @@
                                 </div>
                             </div>
 
-                            <!-- Bloque Permiso -->
                             <div class="row g-3 align-items-center mb-3 p-3 bg-light rounded-3 border">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary mb-1">Vencimiento Permiso de Circulación</label>
@@ -156,7 +151,6 @@
                                 </div>
                             </div>
 
-                            <!-- Bloque Revision -->
                             <div class="row g-3 align-items-center mb-3 p-3 bg-light rounded-3 border">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary mb-1">Vencimiento Revisión Técnica</label>
@@ -168,7 +162,6 @@
                                 </div>
                             </div>
 
-                            <!-- Bloque SOAP -->
                             <div class="row g-3 align-items-center mb-4 p-3 bg-light rounded-3 border">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary mb-1">Vencimiento SOAP</label>
