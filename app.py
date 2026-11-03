@@ -150,15 +150,23 @@ def logout():
     logout_user()
     return redirect(url_for("login"))
 
-# Ruta para eliminar la cuenta actual y liberar el correo
+# Ruta para eliminar la cuenta actual de forma segura
 @app.route("/eliminar_cuenta", methods=["POST"])
 @login_required
 def eliminar_cuenta():
-    user = current_user
-    db.session.delete(user)
-    db.session.commit()
-    logout_user()
-    flash("Tu cuenta ha sido eliminada correctamente.", "info")
+    try:
+        usuario = current_user
+        # Eliminar primero los choferes asociados para evitar errores de llave foránea
+        Chofer.query.filter_by(usuario_id=usuario.id).delete()
+        # Eliminar el usuario
+        db.session.delete(usuario)
+        db.session.commit()
+        logout_user()
+        flash("Tu cuenta ha sido eliminada correctamente.", "info")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error al eliminar la cuenta: {str(e)}", "danger")
+    
     return redirect(url_for("login"))
 
 @app.route("/portal")
