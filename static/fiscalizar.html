@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiscalización - Carabineros de Chile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121e2b; color: #fff; }
+        .card { background-color: #1b2a3a; color: #fff; border: 1px solid #2c3e50; }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-dark text-center border-bottom border-secondary">
+                        <h4 class="text-warning m-0">CONTROL DE FISCALIZACIÓN VEHICULAR</h4>
+                        <small class="text-muted">Sistema Oficial de Verificación</small>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="text-info">{{ chofer.nombre }}</h3>
+                        <p class="mb-1"><strong>RUT:</strong> {{ chofer.rut }}</p>
+                        <p class="mb-1"><strong>Patente (PPU):</strong> <span class="badge bg-light text-dark fs-6">{{ chofer.patente }}</span></p>
+                        <p class="mb-3"><strong>Licencia:</strong> {{ chofer.tipo_licencia }}</p>
+
+                        <hr class="border-secondary">
+
+                        <h5 class="mb-3 text-secondary">Estado de Documentación</h5>
+                        <ul class="list-group list-group-flush bg-transparent">
+                            <li class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-center">
+                                Licencia de Conducir
+                                <span class="badge bg-secondary">Vence: {{ chofer.venc_licencia }}</span>
+                            </li>
+                            <li class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-center">
+                                Permiso de Circulación
+                                <span class="badge bg-secondary">Vence: {{ chofer.venc_permiso }}</span>
+                            </li>
+                            <li class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-center">
+                                Revisión Técnica
+                                <span class="badge bg-secondary">Vence: {{ chofer.venc_revision }}</span>
+                            </li>
+                            <li class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-center">
+                                SOAP (Seguro Obligatorio)
+                                <span class="badge bg-secondary">Vence: {{ chofer.venc_soap }}</span>
+                            </li>
+                        </ul>
+
+                        <div class="mt-4 text-center">
+                            <span class="badge bg-success p-2 fs-6">Documentos Verificados en Base de Datos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

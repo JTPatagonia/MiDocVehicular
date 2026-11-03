@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiDocVehicular - Registro de Choferes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h3>Registro de Documentos - Chofer de Chile</h3>
+                    </div>
+                    <div class="card-body">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form action="/registrar" method="POST" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label class="form-label">Nombre Completo</label>
+                                <input type="text" class="form-control" name="nombre" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">RUT</label>
+                                    <input type="text" class="form-control" name="rut" placeholder="12.345.678-9" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Patente del Vehículo (PPU)</label>
+                                    <input type="text" class="form-control" name="patente" placeholder="ABCD-12" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Licencia</label>
+                                <select class="form-select" name="tipo_licencia" required>
+                                    <option value="Clase A1">Clase A1</option>
+                                    <option value="Clase A2">Clase A2</option>
+                                    <option value="Clase A3">Clase A3</option>
+                                    <option value="Clase A4">Clase A4</option>
+                                    <option value="Clase A5">Clase A5</option>
+                                    <option value="Clase B" selected>Clase B</option>
+                                    <option value="Clase C">Clase C</option>
+                                </select>
+                            </div>
+
+                            <hr>
+                            <h5 class="text-secondary">Documentos y Vencimientos</h5>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Vencimiento Licencia</label>
+                                    <input type="date" class="form-control" name="venc_licencia" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Archivo Licencia (PDF/Imagen)</label>
+                                    <input type="file" class="form-control" name="doc_licencia">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Vencimiento Permiso de Circulación</label>
+                                    <input type="date" class="form-control" name="venc_permiso" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Archivo Permiso Circulación</label>
+                                    <input type="file" class="form-control" name="doc_permiso">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Vencimiento Revisión Técnica</label>
+                                    <input type="date" class="form-control" name="venc_revision" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Archivo Revisión Técnica</label>
+                                    <input type="file" class="form-control" name="doc_revision">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Vencimiento SOAP</label>
+                                    <input type="date" class="form-control" name="venc_soap" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Archivo SOAP</label>
+                                    <input type="file" class="form-control" name="doc_soap">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100 py-2">Generar Código QR de Fiscalización</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
