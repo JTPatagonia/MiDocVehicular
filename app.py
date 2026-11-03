@@ -27,8 +27,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-# Clave de API de Resend (la configuraremos en las variables de entorno de Render)
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
 
 class Usuario(UserMixin, db.Model):
     __tablename__ = "usuarios"
@@ -67,24 +66,26 @@ with app.app_context():
     except Exception as e:
         print(f"Error al crear tablas: {e}")
 
-# Función para enviar correos de forma moderna y segura con Resend (evita bloqueos en Render)
-def enviar_correo_resend(destinatario, asunto, texto_cuerpo):
+# Función para enviar correos asíncronos mediante Brevo
+def enviar_correo_brevo(destinatario, asunto, texto_cuerpo):
     def tarea():
         try:
+            url = "https://api.brevo.com/v3/smtp/email"
             headers = {
-                "Authorization": f"Bearer {RESEND_API_KEY}",
-                "Content-Type": "application/json"
+                "accept": "application/json",
+                "api-key": BREVO_API_KEY,
+                "content-type": "application/json"
             }
             data = {
-                "from": "MiDocVehicular <onboarding@resend.dev>", # O tu dominio verificado si lo tienes
-                "to": [destinatario],
+                "sender": {"name": "MiDocVehicular", "email": "midocvehicular@gmail.com"},
+                "to": [{"email": destinatario}],
                 "subject": asunto,
-                "text": texto_cuerpo
+                "textContent": texto_cuerpo
             }
-            response = requests.post("https://api.resend.com/emails", json=data, headers=headers)
-            print(f"Respuesta Resend: {response.status_code}, {response.text}")
+            response = requests.post(url, json=data, headers=headers)
+            print(f"Respuesta Brevo: {response.status_code}, {response.text}")
         except Exception as e:
-            print(f"Error enviando correo vía Resend: {e}")
+            print(f"Error enviando correo vía Brevo: {e}")
 
     threading.Thread(target=tarea).start()
 
@@ -122,7 +123,7 @@ def register():
         db.session.add(nuevo_usuario)
         db.session.commit()
         
-        # Enviar correo de bienvenida
+        # Enviar correo de bienvenida con Brevo
         asunto = "🎉 ¡Bienvenido a MiDocVehicular - Cuenta creada con éxito!"
         cuerpo = """¡Hola!
 
@@ -132,7 +133,7 @@ Ya puedes iniciar sesión para registrar tus vehículos y gestionar tus códigos
 Atentamente,
 El equipo de MiDocVehicular"""
         
-        enviar_correo_resend(email, asunto, cuerpo)
+        enviar_correo_brevo(email, asunto, cuerpo)
         
         flash("¡Cuenta creada con éxito! Revisa tu bandeja de entrada para el correo de bienvenida e inicia sesión.", "success")
         return redirect(url_for("login"))
@@ -225,7 +226,7 @@ def registrar():
         chofer.qr_code = qr_path.replace("\\", "/")
         db.session.commit()
 
-        # Enviar aviso con el enlace directo al QR mediante Resend
+        # Enviar aviso con el enlace directo al QR mediante Brevo
         fiscalizar_link = url_for("fiscalizar", rut=rut, _external=True)
         asunto_qr = "🚗 Tu Código QR de Fiscalización - MiDocVehicular"
         cuerpo_qr = f"""Hola {nombre},
@@ -237,7 +238,7 @@ Puedes acceder directamente a tu tarjeta de fiscalización y código QR para Car
 Atentamente,
 Equipo MiDocVehicular"""
         
-        enviar_correo_resend(current_user.email, asunto_qr, cuerpo_qr)
+        enviar_correo_brevo(current_user.email, asunto_qr, cuerpo_qr)
 
         qr_web_path = url_for("static", filename=f"uploads/{qr_filename}")
         return render_template("index.html", qr_url=qr_web_path)
