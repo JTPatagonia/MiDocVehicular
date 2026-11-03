@@ -30,7 +30,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-# Configuración de Correo Gmail (Usa variables de entorno en Render por seguridad)
+# Configuración de Correo Gmail
 MAIL_SERVER = "smtp.gmail.com"
 MAIL_PORT = 587
 MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "midocvehicular@gmail.com")
@@ -74,7 +74,36 @@ with app.app_context():
     except Exception as e:
         print(f"Error al crear tablas: {e}")
 
-# Función para enviar el correo con el QR
+# Función para enviar correo de bienvenida al registrarse
+def enviar_correo_bienvenida(destinatario):
+    try:
+        msg = MIMEMultipart()
+        msg['Subject'] = '🎉 ¡Bienvenido a MiDocVehicular - Cuenta creada con éxito!'
+        msg['From'] = MAIL_USERNAME
+        msg['To'] = destinatario
+
+        cuerpo = """
+        ¡Hola!
+        
+        Tu cuenta en MiDocVehicular ha sido creada con éxito.
+        Ya puedes iniciar sesión para registrar tus vehículos y gestionar tus códigos QR de fiscalización oficiales para Carabineros de Chile.
+        
+        Atentamente,
+        El equipo de MiDocVehicular
+        """
+        msg.attach(MIMEText(cuerpo, 'plain'))
+
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
+        server.starttls()
+        server.login(MAIL_USERNAME, MAIL_PASSWORD)
+        server.sendmail(MAIL_USERNAME, destinatario, msg.as_string())
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"Error al enviar correo de bienvenida: {e}")
+        return False
+
+# Función para enviar el correo con el QR de vehículos
 def enviar_correo_qr(destinatario, nombre_chofer, qr_path):
     try:
         msg = MIMEMultipart()
@@ -139,7 +168,10 @@ def register():
         db.session.add(nuevo_usuario)
         db.session.commit()
         
-        flash("¡Cuenta creada con éxito! Inicia sesión.", "success")
+        # Enviar correo electrónico de bienvenida
+        enviar_correo_bienvenida(email)
+        
+        flash("¡Cuenta creada con éxito! Revisa tu correo de bienvenida e inicia sesión.", "success")
         return redirect(url_for("login"))
     return render_template("register.html")
 
@@ -214,7 +246,6 @@ def registrar():
         chofer.qr_code = qr_path.replace("\\", "/")
         db.session.commit()
 
-        # Enviar correo al usuario autenticado
         enviar_correo_qr(current_user.email, nombre, qr_path)
 
         qr_web_path = url_for("static", filename=f"uploads/{qr_filename}")
