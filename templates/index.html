@@ -65,7 +65,6 @@
                     </div>
                     <div class="card-body p-4 p-md-5">
                         
-                        <!-- Si se generó un QR, se muestra en pantalla -->
                         {% if qr_url %}
                         <div class="text-center p-4 bg-light rounded-4 border mb-4">
                             <h3 class="text-success fw-bold mb-3"><i class="fa-solid fa-circle-check me-2"></i>¡Registro Exitoso!</h3>
@@ -97,31 +96,62 @@
                                     <label class="form-label fw-semibold">RUT</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light"><i class="fa-solid fa-address-card text-muted"></i></span>
-                                        <input type="text" class="form-control" name="rut" placeholder="12.345.678-9" required>
+                                        <!-- Validación estricta formato XX.XXX.XXX-X o X.XXX.XXX-X (números y K) -->
+                                        <input type="text" class="form-control" name="rut" placeholder="12.345.678-9 o 12.345.678-K" 
+                                               pattern="^\d{1,2}\.\d{3}\.\d{3}-[0-9kK]$" 
+                                               title="Debe ingresar un RUT válido con puntos y guion (Ej: 12.345.678-9 o 12.345.678-K)" required>
                                     </div>
+                                    <small class="text-muted">Formato: XX.XXX.XXX-X (Dígito verificador numérico o K)</small>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Patente del Vehículo (PPU)</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light"><i class="fa-solid fa-car text-muted"></i></span>
-                                        <input type="text" class="form-control" name="patente" placeholder="ABCD-12" required>
+                                        <!-- Formato patente chilena (ej: ABCD-12 o AB-1234) -->
+                                        <input type="text" class="form-control text-uppercase" name="patente" placeholder="ABCD-12 o BB-BB-12" 
+                                               pattern="^[A-Z]{2,4}[-\s]?[0-9]{2,4}$" 
+                                               title="Formato de patente chilena (Ej: ABCD-12)" required>
                                     </div>
+                                    <small class="text-muted">Formato: Letras y números (Ej: ABCD-12)</small>
                                 </div>
                             </div>
 
+                            <!-- Selección Múltiple de Licencias -->
                             <div class="mb-4">
-                                <label class="form-label fw-semibold">Tipo de Licencia</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="fa-solid fa-clipboard-user text-muted"></i></span>
-                                    <select class="form-select" name="tipo_licencia" required>
-                                        <option value="Clase A1">Clase A1 - Taxis</option>
-                                        <option value="Clase A2">Clase A2 - Taxis, ambulancias, minibuses</option>
-                                        <option value="Clase A3">Clase A3 - Taxis, transporte escolar, interurbano</option>
-                                        <option value="Clase A4">Clase A4 - Transporte de carga simple</option>
-                                        <option value="Clase A5">Clase A5 - Transporte de carga articulada</option>
-                                        <option value="Clase B" selected>Clase B - Vehículos motorizados particulares</option>
-                                        <option value="Clase C">Clase C - Motos</option>
-                                    </select>
+                                <label class="form-label fw-semibold d-block">Tipos de Licencia que Posee (Seleccione una o varias)</label>
+                                <div class="p-3 bg-light rounded-3 border row g-2">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="tipo_licencia" value="Clase A1" id="licA1">
+                                            <label class="form-check-label" for="licA1"><strong>Clase A1</strong> - Taxis</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="tipo_licencia" value="Clase A2" id="licA2">
+                                            <label class="form-check-label" for="licA2"><strong>Clase A2</strong> - Taxis, minibuses</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="tipo_licencia" value="Clase A3" id="licA3">
+                                            <label class="form-check-label" for="licA3"><strong>Clase A3</strong> - Transporte escolar e interurbano</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="tipo_licencia" value="Clase C" id="licC">
+                                            <label class="form-check-label" for="licC"><strong>Clase C</strong> - Motos y vehículos de 2-3 ruedas</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="tipo_licencia" value="Clase A4" id="licA4">
+                                            <label class="form-check-label" for="licA4"><strong>Clase A4</strong> - Carga simple</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="tipo_licencia" value="Clase A5" id="licA5">
+                                            <label class="form-check-label" for="licA5"><strong>Clase A5</strong> - Carga articulada</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="tipo_licencia" value="Clase B" id="licB" checked>
+                                            <label class="form-check-label" for="licB"><strong>Clase B</strong> - Vehículos particulares</label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

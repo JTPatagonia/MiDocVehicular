@@ -48,7 +48,7 @@
 <body class="py-5">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-7">
+            <div class="col-lg-8">
                 <div class="card police-card">
                     <div class="police-header text-center">
                         <i class="fa-solid fa-shield-halved text-warning fs-1 mb-2"></i>
@@ -61,51 +61,87 @@
                             <span class="badge-ppu d-inline-block shadow-sm mb-2">{{ chofer.patente }}</span>
                             <h3 class="text-white fw-bold mb-1">{{ chofer.nombre }}</h3>
                             <p class="text-muted mb-0"><i class="fa-solid fa-id-card me-1"></i> RUT: {{ chofer.rut }}</p>
-                            <p class="text-info small fw-semibold mt-1">Licencia: {{ chofer.tipo_licencia }}</p>
+                            <p class="text-info fw-semibold mt-2"><i class="fa-solid fa-id-badge me-1"></i> Licencias Habilitadas: <span class="badge bg-info text-dark">{{ chofer.tipo_licencia }}</span></p>
                         </div>
 
                         <hr class="border-secondary opacity-50 my-4">
 
-                        <h5 class="text-secondary small text-uppercase fw-bold mb-3 tracking-wide">
-                            <i class="fa-solid fa-folder-open me-2 text-warning"></i>Estado de Documentos Obligatorios
+                        <h5 class="text-secondary small text-uppercase fw-bold mb-3">
+                            <i class="fa-solid fa-folder-open me-2 text-warning"></i>Documentos y Archivos Adjuntos (Inspección Policial)
                         </h5>
 
-                        <div class="doc-item d-flex justify-content-between align-items-center">
+                        <!-- Licencia -->
+                        <div class="doc-item d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div>
-                                <span class="fw-semibold d-block text-white">Licencia de Conducir</span>
-                                <small class="text-muted">Vencimiento registrado</small>
+                                <span class="fw-semibold d-block text-white"><i class="fa-solid fa-address-card text-info me-2"></i>Licencia de Conducir</span>
+                                <small class="text-muted">Vence: {{ chofer.venc_licencia }}</small>
                             </div>
-                            <span class="badge bg-primary fs-6 px-3 py-2">{{ chofer.venc_licencia }}</span>
+                            <div>
+                                {% if chofer.doc_licencia %}
+                                    <a href="/{{ chofer.doc_licencia }}" target="_blank" class="btn btn-sm btn-outline-info fw-semibold">
+                                        <i class="fa-solid fa-eye me-1"></i> Ver Documento
+                                    </a>
+                                {% else %}
+                                    <span class="badge bg-secondary">No adjuntado</span>
+                                {% endif %}
+                            </div>
                         </div>
 
-                        <div class="doc-item d-flex justify-content-between align-items-center">
+                        <!-- Permiso de Circulación -->
+                        <div class="doc-item d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div>
-                                <span class="fw-semibold d-block text-white">Permiso de Circulación</span>
-                                <small class="text-muted">Vencimiento registrado</small>
+                                <span class="fw-semibold d-block text-white"><i class="fa-solid fa-file-invoice text-info me-2"></i>Permiso de Circulación</span>
+                                <small class="text-muted">Vence: {{ chofer.venc_permiso }}</small>
                             </div>
-                            <span class="badge bg-primary fs-6 px-3 py-2">{{ chofer.venc_permiso }}</span>
+                            <div>
+                                {% if chofer.doc_permiso %}
+                                    <a href="/{{ chofer.doc_permiso }}" target="_blank" class="btn btn-sm btn-outline-info fw-semibold">
+                                        <i class="fa-solid fa-eye me-1"></i> Ver Documento
+                                    </a>
+                                {% else %}
+                                    <span class="badge bg-secondary">No adjuntado</span>
+                                {% endif %}
+                            </div>
                         </div>
 
-                        <div class="doc-item d-flex justify-content-between align-items-center">
+                        <!-- Revisión Técnica -->
+                        <div class="doc-item d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div>
-                                <span class="fw-semibold d-block text-white">Revisión Técnica y Gases</span>
-                                <small class="text-muted">Vencimiento registrado</small>
+                                <span class="fw-semibold d-block text-white"><i class="fa-solid fa-car-on text-info me-2"></i>Revisión Técnica y Gases</span>
+                                <small class="text-muted">Vence: {{ chofer.venc_revision }}</small>
                             </div>
-                            <span class="badge bg-primary fs-6 px-3 py-2">{{ chofer.venc_revision }}</span>
+                            <div>
+                                {% if chofer.doc_revision %}
+                                    <a href="/{{ chofer.doc_revision }}" target="_blank" class="btn btn-sm btn-outline-info fw-semibold">
+                                        <i class="fa-solid fa-eye me-1"></i> Ver Documento
+                                    </a>
+                                {% else %}
+                                    <span class="badge bg-secondary">No adjuntado</span>
+                                {% endif %}
+                            </div>
                         </div>
 
-                        <div class="doc-item d-flex justify-content-between align-items-center">
+                        <!-- SOAP -->
+                        <div class="doc-item d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div>
-                                <span class="fw-semibold d-block text-white">SOAP (Seguro Obligatorio)</span>
-                                <small class="text-muted">Vencimiento registrado</small>
+                                <span class="fw-semibold d-block text-white"><i class="fa-solid fa-file-shield text-info me-2"></i>SOAP (Seguro Obligatorio)</span>
+                                <small class="text-muted">Vence: {{ chofer.venc_soap }}</small>
                             </div>
-                            <span class="badge bg-primary fs-6 px-3 py-2">{{ chofer.venc_soap }}</span>
+                            <div>
+                                {% if chofer.doc_soap %}
+                                    <a href="/{{ chofer.doc_soap }}" target="_blank" class="btn btn-sm btn-outline-info fw-semibold">
+                                        <i class="fa-solid fa-eye me-1"></i> Ver Documento
+                                    </a>
+                                {% else %}
+                                    <span class="badge bg-secondary">No adjuntado</span>
+                                {% endif %}
+                            </div>
                         </div>
 
                         <div class="mt-4 text-center bg-success bg-opacity-10 border border-success rounded-3 p-3">
                             <i class="fa-solid fa-circle-check text-success fs-4 mb-1"></i>
-                            <h6 class="text-success fw-bold mb-0">Identidad y Registro Verificados</h6>
-                            <small class="text-muted">Base de datos centralizada - Chile</small>
+                            <h6 class="text-success fw-bold mb-0">Identidad y Archivos Listos para Inspección</h6>
+                            <small class="text-muted">Carabineros de Chile - Control en Terreno</small>
                         </div>
 
                     </div>
