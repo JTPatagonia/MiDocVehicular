@@ -10,7 +10,12 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            /* Fondo llamativo: Imagen temática de ruta nocturna con degradado oscuro elegante */
+            background: linear-gradient(rgba(11, 19, 30, 0.85), rgba(11, 19, 30, 0.92)), 
+                        url('https://images.unsplash.com/photo-1506521781263-d8422e82f27a?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -18,12 +23,14 @@
             color: #334155;
         }
         .auth-card {
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             width: 100%;
             max-width: 420px;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.96) !important;
         }
         .auth-header {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
@@ -57,8 +64,8 @@
 <body>
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-5">
-                <div class="card auth-card bg-white">
+            <div class="col-md-5 d-flex justify-content-center">
+                <div class="card auth-card">
                     <div class="auth-header">
                         <i class="fa-solid fa-id-card-clip fs-1 mb-2"></i>
                         <h3 class="fw-bold mb-1">MiDocVehicular</h3>
